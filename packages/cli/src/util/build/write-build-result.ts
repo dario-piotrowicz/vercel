@@ -1,6 +1,6 @@
-import fs from 'fs-extra';
+import fs, { chmod, mkdirp, readlink, remove, symlink } from 'fs-extra';
 import mimeTypes from 'mime-types';
-import {
+import path, {
   basename,
   dirname,
   extname,
@@ -20,12 +20,16 @@ import {
   Lambda,
   PackageJson,
   Prerender,
-  download,
-  downloadFile,
   EdgeFunction,
   BuildResultBuildOutput,
   getLambdaOptionsFromFunction,
   normalizePath,
+  isSymbolicLink,
+  DownloadedFiles,
+  Files,
+  Meta,
+  isDirectory,
+  streamToBuffer,
 } from '@vercel/build-utils';
 import pipe from 'promisepipe';
 import { merge } from './merge';
@@ -484,4 +488,134 @@ export async function* findDirs(
       }
     }
   }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+// NOTE:
+// the functions below are taken from @vercel/build-utils
+// and the download function has been updated to call downloadFile sequentially
+// instead of doing that in parallel (via Promise.all)
+// see: https://github.com/vercel/vercel/blob/6115f0d74a90b1931ce500be2c3a05645c8529f6/packages/build-utils/src/fs/download.ts#L103
+//
+// ps: instead of copying the functions here I could have also published my own version of
+// the build-utils package, but in order to keep things simple and the changes to a minimum
+// I opted to just copy (and tweak) the functions here
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+export async function downloadFile(
+  file: File,
+  fsPath: string
+): Promise<FileFsRef> {
+  const { mode } = file;
+
+  if (isDirectory(mode)) {
+    await mkdirp(fsPath);
+    await chmod(fsPath, mode);
+    return FileFsRef.fromFsPath({ mode, fsPath });
+  }
+
+  // If the source is a symlink, try to create it instead of copying the file.
+  // Note: creating symlinks on Windows requires admin priviliges or symlinks
+  // enabled in the group policy. We may want to improve the error message.
+  if (isSymbolicLink(mode)) {
+    const target = await prepareSymlinkTarget(file, fsPath);
+
+    await symlink(target, fsPath);
+    return FileFsRef.fromFsPath({ mode, fsPath });
+  }
+
+  const stream = file.toStream();
+  return FileFsRef.fromStream({ mode, stream, fsPath });
+}
+
+async function removeFile(basePath: string, fileMatched: string) {
+  const file = path.join(basePath, fileMatched);
+  await remove(file);
+}
+
+export default async function download(
+  files: Files,
+  basePath: string,
+  meta?: Meta
+): Promise<DownloadedFiles> {
+  const {
+    isDev = false,
+    skipDownload = false,
+    filesChanged = null,
+    filesRemoved = null,
+  } = meta || {};
+
+  if (isDev || skipDownload) {
+    // In `vercel dev`, the `download()` function is a no-op because
+    // the `basePath` matches the `cwd` of the dev server, so the
+    // source files are already available.
+    return files as DownloadedFiles;
+  }
+
+  const files2: DownloadedFiles = {};
+  const filenames = Object.keys(files);
+
+  for (const name of filenames) {
+    // If the file does not exist anymore, remove it.
+    if (Array.isArray(filesRemoved) && filesRemoved.includes(name)) {
+      await removeFile(basePath, name);
+      continue;
+    }
+    // If a file didn't change, do not re-download it.
+    if (Array.isArray(filesChanged) && !filesChanged.includes(name)) {
+      continue;
+    }
+
+    // Some builders resolve symlinks and return both
+    // a file, node_modules/<symlink>/package.json, and
+    // node_modules/<symlink>, a symlink.
+    // Removing the file matches how the yazl lambda zip
+    // behaves so we can use download() with `vercel build`.
+    const parts = name.split('/');
+    for (let i = 1; i < parts.length; i++) {
+      const dir = parts.slice(0, i).join('/');
+      const parent = files[dir];
+      if (parent && isSymbolicLink(parent.mode)) {
+        console.warn(
+          `Warning: file "${name}" is within a symlinked directory "${dir}" and will be ignored`
+        );
+        continue;
+      }
+    }
+
+    const file = files[name];
+    const fsPath = path.join(basePath, name);
+
+    files2[name] = await downloadFile(file, fsPath);
+  }
+
+  return files2;
+}
+
+async function prepareSymlinkTarget(
+  file: File,
+  fsPath: string
+): Promise<string> {
+  const mkdirPromise = mkdirp(path.dirname(fsPath));
+  if (file.type === 'FileFsRef') {
+    const [target] = await Promise.all([readlink(file.fsPath), mkdirPromise]);
+    return target;
+  }
+
+  if (file.type === 'FileRef' || file.type === 'FileBlob') {
+    const targetPathBufferPromise = streamToBuffer(await file.toStreamAsync());
+    const [targetPathBuffer] = await Promise.all([
+      targetPathBufferPromise,
+      mkdirPromise,
+    ]);
+    return targetPathBuffer.toString('utf8');
+  }
+
+  throw new Error(
+    `file.type "${(file as any).type}" not supported for symlink`
+  );
 }
