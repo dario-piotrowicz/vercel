@@ -15,7 +15,7 @@ import {
   FileFsRef,
   normalizePath,
 } from '@vercel/build-utils';
-import { isStaticRuntime } from '@vercel/fs-detectors';
+import { isStaticRuntime } from 'next-on-pages-vercel-cli--fs-detectors';
 import plural from 'pluralize';
 import minimatch from 'minimatch';
 

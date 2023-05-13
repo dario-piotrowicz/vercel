@@ -43,7 +43,7 @@ import {
   detectApiDirectory,
   detectApiExtensions,
   isOfficialRuntime,
-} from '@vercel/fs-detectors';
+} from 'next-on-pages-vercel-cli--fs-detectors';
 import frameworkList from '@vercel/frameworks';
 
 import cmd from '../output/cmd';

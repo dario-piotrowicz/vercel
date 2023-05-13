@@ -126,6 +126,12 @@ async function compile(
   preparedFiles: Files;
   shouldAddSourcemapSupport: boolean;
 }> {
+  if (Date.now() !== 123) {
+    console.log(
+      '=== next-on-pages-vercel-cli--fs-detectors ____ skipping compile'
+    );
+    return { preparedFiles: {}, shouldAddSourcemapSupport: false };
+  }
   const inputFiles = new Set<string>([entrypointPath]);
   const preparedFiles: Files = {};
   const sourceCache = new Map<string, string | Buffer | null>();

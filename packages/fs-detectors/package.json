@@ -1,6 +1,6 @@
 {
-  "name": "@vercel/fs-detectors",
-  "version": "3.9.2",
+  "name": "next-on-pages-vercel-cli--fs-detectors",
+  "version": "3.9.2--3",
   "description": "Vercel filesystem detectors",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

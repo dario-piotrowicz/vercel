@@ -95,6 +95,9 @@ export async function detectBuilders(
   rewriteRoutes: Route[] | null;
   errorRoutes: Route[] | null;
 }> {
+  console.log(
+    `running detectBuilders from next-on-pages-vercel-cli--fs-detectors`
+  );
   const errors: ErrorResponse[] = [];
   const warnings: ErrorResponse[] = [];
 
@@ -318,7 +321,8 @@ export async function detectBuilders(
   ) {
     apiBuilders = apiBuilders.filter(builder => {
       const isMiddlewareBuilder =
-        builder.use === '@vercel/node' && builder.config?.middleware;
+        builder.use === 'next-on-pages-vercel-cli--node' &&
+        builder.config?.middleware;
       return !isMiddlewareBuilder;
     });
   }
@@ -459,10 +463,14 @@ function getApiMatches(): Builder[] {
   return [
     {
       src: 'middleware.[jt]s',
-      use: `@vercel/node`,
+      use: `next-on-pages-vercel-cli--node`,
       config: { ...config, middleware: true },
     },
-    { src: 'api/**/*.+(js|mjs|ts|tsx)', use: `@vercel/node`, config },
+    {
+      src: 'api/**/*.+(js|mjs|ts|tsx)',
+      use: `next-on-pages-vercel-cli--node`,
+      config,
+    },
     { src: 'api/**/!(*_test).go', use: `@vercel/go`, config },
     { src: 'api/**/*.py', use: `@vercel/python`, config },
     { src: 'api/**/*.rb', use: `@vercel/ruby`, config },

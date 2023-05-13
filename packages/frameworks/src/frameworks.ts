@@ -200,7 +200,7 @@ export const frameworks = [
     website: 'https://remix.run',
     sort: 6,
     useRuntime: { src: 'package.json', use: '@vercel/remix-builder' },
-    ignoreRuntimes: ['@vercel/node'],
+    ignoreRuntimes: ['next-on-pages-vercel-cli--node'],
     detectors: {
       some: [
         {
@@ -1465,7 +1465,7 @@ export const frameworks = [
     website: 'https://redwoodjs.com',
     envPrefix: 'REDWOOD_ENV_',
     useRuntime: { src: 'package.json', use: '@vercel/redwood' },
-    ignoreRuntimes: ['@vercel/node'],
+    ignoreRuntimes: ['next-on-pages-vercel-cli--node'],
     detectors: {
       every: [
         {
@@ -1940,7 +1940,7 @@ export const frameworks = [
     description:
       'Storybook is a frontend workshop for building UI components and pages in isolation.',
     website: 'https://storybook.js.org',
-    ignoreRuntimes: ['@vercel/next', '@vercel/node'],
+    ignoreRuntimes: ['@vercel/next', 'next-on-pages-vercel-cli--node'],
     disableRootMiddleware: true,
     detectors: {
       every: [

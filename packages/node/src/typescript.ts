@@ -122,6 +122,7 @@ const configFileToBuildMap = new Map<string, GetOutputFunction>();
  * Register TypeScript compiler.
  */
 export function register(opts: Options = {}): Register {
+  console.log('=== next-on-pages-vercel-cli--fs-detectors ____ register');
   const options = Object.assign({}, DEFAULTS, opts);
 
   const ignoreDiagnostics = [
@@ -151,6 +152,7 @@ export function register(opts: Options = {}): Register {
   } else {
     console.log(`Using TypeScript ${ts.version} (local user-provided)`);
   }
+  console.log(`Logs from next-on-pages-vercel-cli--node`);
   const transformers = options.transformers || undefined;
   const readFile = options.readFile || ts.sys.readFile;
   const fileExists = options.fileExists || ts.sys.fileExists;

@@ -22,7 +22,7 @@ import {
   detectBuilders,
   detectFrameworkRecord,
   LocalFileSystemDetector,
-} from '@vercel/fs-detectors';
+} from 'next-on-pages-vercel-cli--fs-detectors';
 import minimatch from 'minimatch';
 import {
   appendRoutesToPhase,
@@ -65,7 +65,7 @@ import { validateConfig } from '../util/validate-config';
 
 import { setMonorepoDefaultSettings } from '../util/build/monorepo';
 import frameworks from '@vercel/frameworks';
-import { detectFrameworkVersion } from '@vercel/fs-detectors';
+import { detectFrameworkVersion } from 'next-on-pages-vercel-cli--fs-detectors';
 import semver from 'semver';
 
 type BuildResult = BuildResultV2 | BuildResultV3;
@@ -521,6 +521,11 @@ async function doBuild(
       output.debug(
         `Building entrypoint "${build.src}" with "${builderPkg.name}"`
       );
+      console.log(`=== next-on-pages-vercel-cli ____ builder.build
+       --- build.src = ${build.src}
+       --- build.use = ${build.use}
+      
+      `);
       const buildResult = await builder.build(buildOptions);
 
       if (

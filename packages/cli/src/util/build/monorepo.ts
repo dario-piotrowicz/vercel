@@ -4,7 +4,7 @@ import {
   getMonorepoDefaultSettings,
   MissingBuildPipeline,
   MissingBuildTarget,
-} from '@vercel/fs-detectors';
+} from 'next-on-pages-vercel-cli--fs-detectors';
 import { ProjectLinkAndSettings } from '../projects/project-settings';
 import { Output } from '../output';
 import title from 'title';

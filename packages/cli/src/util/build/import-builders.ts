@@ -4,7 +4,7 @@ import npa from 'npm-package-arg';
 import { satisfies } from 'semver';
 import { dirname, join } from 'path';
 import { mkdirp, outputJSON, readJSON, symlink } from 'fs-extra';
-import { isStaticRuntime } from '@vercel/fs-detectors';
+import { isStaticRuntime } from 'next-on-pages-vercel-cli--fs-detectors';
 import { BuilderV2, BuilderV3, PackageJson } from '@vercel/build-utils';
 import execa from 'execa';
 import * as staticBuilder from './static-builder';
