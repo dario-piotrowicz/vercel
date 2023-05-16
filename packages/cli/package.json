@@ -1,6 +1,6 @@
 {
   "name": "next-on-pages-vercel-cli",
-  "version": "29.3.0-next-on-pages-fix-1",
+  "version": "29.3.0-next-on-pages-fix-3",
   "preferGlobal": true,
   "license": "Apache-2.0",
   "description": "The command-line interface for Vercel",
@@ -22,7 +22,7 @@
   },
   "bin": {
     "vc": "./dist/index.js",
-    "vercel": "./dist/index.js"
+    "next-on-pages-vercel-cli": "./dist/index.js"
   },
   "files": [
     "dist",
